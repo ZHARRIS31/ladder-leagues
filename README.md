@@ -1,2 +1,2 @@
-# winter-leagues
+# ladder-leagues
 MTC Ladder Leagues app
