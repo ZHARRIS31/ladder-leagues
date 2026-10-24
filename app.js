@@ -3,7 +3,7 @@
 /* ---------- settings: edit these ---------- */
 const CONFIG = {
   // The Web app URL from Apps Script (Deploy > Manage deployments). Ends in /exec.
-  API_URL: "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE",
+  API_URL: "https://script.google.com/macros/s/AKfycbxP-QY-0Yq7GTOBNEUfGrRClag7v_Uwk_do0eNTtuzjKzYZtH329VNmVKWcjCY9Z1IB/exec",
   CLUB_EMAIL: "tennisatmenheniot@gmail.com",
   CLUB_URL: "https://clubspark.lta.org.uk/MenheniotTennisClub",
   // Court booking pages. Leave "" to fall back to CLUB_URL.
