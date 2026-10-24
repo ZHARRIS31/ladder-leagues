@@ -193,7 +193,7 @@ function renderMine(M) {
     .filter(a => a.key === C.norm(S.me.name) && a.to && a.to >= t);
   h += `<h3>When I'm away</h3><div class="list panel">${myAway.length ? myAway.map(a => `<div><span><strong>${esc(fmt(a.from))} – ${esc(fmt(a.to))}</strong> · ${esc(a.why || "Away")}</span><button class="small danger" data-act="removeAway" data-row="${a.row}">Remove</button></div>`).join("") : `<div><span class="note">No dates logged.</span></div>`}</div>
     <div class="row"><label for="awFrom">Away from<input type="date" id="awFrom" min="${t}"></label><label for="awTo">Back on<input type="date" id="awTo" min="${t}"></label>
-    <label for="awWhy">Reason<select id="awWhy"><option>Holiday</option><option>Injury</option><option>Other</option></select></label><button class="primary" data-act="away">Add dates</button></div>`;
+    <label for="awWhy">Reason (only the organiser sees this)<select id="awWhy"><option>Holiday</option><option>Injury</option><option>Other</option></select></label><button class="primary" data-act="away">Add dates</button></div>`;
   box.innerHTML = h;
 }
 
