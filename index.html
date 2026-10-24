@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>MTC Ladder Leagues</title>
+  <meta name="description" content="Menheniot Tennis Club winter challenge ladders 2026/27">
+  <meta name="theme-color" content="#1f5c4a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="MTC Ladder">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Menheniot Tennis Club · Menheniot &amp; Liskeard courts</div>
+      <h1>Ladder Leagues 2026/27</h1>
+      <p class="note">Five challenge ladders · 1 November 2026 – 31 March 2027 · Fast4 format</p>
+    </div>
+    <div class="board" aria-label="Season summary">
+      <div class="cell"><b id="sPlayers">0</b><span>Entries</span></div>
+      <div class="cell"><b id="sPlayed">0</b><span>Matches</span></div>
+      <div class="cell ball"><b id="sDays">–</b><span id="sDaysLbl">Days to go</span></div>
+    </div>
+  </header>
+
+  <div class="panel whobar" id="whobar"></div>
+  <div id="status" class="note" aria-live="polite"></div>
+
+  <nav class="tabs" role="tablist" id="tabs" aria-label="Leagues"></nav>
+
+  <section aria-labelledby="hTable">
+    <div class="sechead"><h2 id="hTable">Standings</h2>
+      <div class="row" style="grid-template-columns:auto auto;gap:8px;align-items:center">
+        <label for="avFrom" style="display:flex;gap:6px;align-items:center">Free from<input type="date" id="avFrom" style="width:auto"></label>
+        <label for="avTo" style="display:flex;gap:6px;align-items:center">to<input type="date" id="avTo" style="width:auto"></label>
+      </div>
+    </div>
+    <div class="panel tablewrap" id="standings"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <div class="grid">
+    <section aria-labelledby="hMine">
+      <div class="sechead"><h2 id="hMine">My ladder</h2></div>
+      <div class="panel pad mydesk" id="mine"></div>
+    </section>
+    <section aria-labelledby="hMatches">
+      <div class="sechead"><h2 id="hMatches">Matches in progress</h2><span class="note">Reply within 72 hours</span></div>
+      <div class="panel" id="openList"></div>
+      <div class="sechead"><h3>Away or injured</h3></div>
+      <div class="panel" id="awayList"></div>
+    </section>
+  </div>
+
+  <section aria-labelledby="hResults">
+    <div class="sechead"><h2 id="hResults">Results</h2></div>
+    <div class="panel tablewrap" id="results"></div>
+  </section>
+
+  <section aria-labelledby="hBadges">
+    <div class="sechead"><h2 id="hBadges">Badges</h2></div>
+    <div class="badges" id="badges"></div>
+  </section>
+
+  <section aria-labelledby="hRules">
+    <h2 id="hRules">Rules</h2>
+    <div class="panel rules">
+      <ol>
+        <li><b>The leagues.</b> Competitive Mixed (singles), Competitive Ladies (singles), Social (singles), Doubles (men's, ladies' or mixed pairs, choose your own partner) and Walking Tennis Doubles. If you play in either competitive league you can't also play in the Social league.</li>
+        <li><b>Season.</b> Challenges run from 1 November 2026 to 31 March 2027. Whoever is top of each ladder at the end of 31 March is that league's champion.</li>
+        <li><b>Availability.</b> Log any holiday or injury under My ladder. While you're away nobody can challenge you, and the standings show who is free for the dates you pick.</li>
+        <li><b>Challenging.</b> You can challenge anyone up to three places above you who is available. Each player or pair can be in only one match at a time.</li>
+        <li><b>Wild card.</b> Every player or pair gets one wild card per league per season, to challenge anyone above them however far up.</li>
+        <li><b>72 hours to reply.</b> Once challenged, you must accept and pick a date within 72 hours. If you don't, the challenger gets the win automatically.</li>
+        <li><b>Venue and booking.</b> Play at Menheniot or Liskeard, whichever you both prefer, and book the court as soon as the date is agreed.</li>
+        <li><b>Format: Fast4, best of three sets.</b> Sets are first to four games. At 3–3 play a tie-break to 5 points, with no need to win by two (5–4 wins). The first deuce of a game is played as normal deuce. At the second deuce the next point wins the game (sudden death), and the receiver chooses which side the server serves from.</li>
+        <li><b>Moving up.</b> If the challenger wins, they take the defender's place and everyone in between drops one. If the defender wins, nobody moves and the challenger can't challenge the same opponent again for 14 days.</li>
+        <li><b>Scores.</b> Only the challenger enters the score, so results aren't entered twice.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="ladder-core.js"></script>
+<script src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () { navigator.serviceWorker.register("sw.js").catch(function () {}); });
+  }
+</script>
+</body>
+</html>
