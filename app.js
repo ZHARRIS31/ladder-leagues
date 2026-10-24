@@ -27,6 +27,21 @@ function waTo(mobile, text) {
   if (n[0] === "+") n = n.slice(1); else if (n.indexOf("00") === 0) n = n.slice(2); else if (n[0] === "0") n = "44" + n.slice(1);
   return "https://wa.me/" + n + "?text=" + encodeURIComponent(text);
 }
+// Ready-written WhatsApp message to an opponent, worded for where the match has got to.
+function waMessage(o, toName) {
+  const hi = "Hi " + toName.split(" ")[0] + ", it's " + S.me.name.split(" ")[0] + " from the MTC " + S.league + " ladder. ";
+  const ask = "Could you let me know which days and times you're free over the next week or so, and whether you'd prefer Menheniot or Liskeard? Then we can find a time that suits us both.";
+  const link = "\n\nThe app: " + location.origin + location.pathname;
+  if (!o) return hi + "I'm getting in touch about our ladder match. " + ask + link;
+  const iChallenged = isMine(C.model(S.data, S.league), o.c);
+  if (!o.accepted) {
+    return hi + (iChallenged
+      ? "I've challenged you to a match 🎾 so we now need to arrange when to play. " + ask + " Once we've agreed, please accept the challenge in the app and put the date in. Your reply is due by " + fmtDT(o.replyBy) + "."
+      : "Thanks for the challenge 🎾 Let's arrange when to play. " + ask + " Once we've agreed, I'll accept it in the app with the date.") + link;
+  }
+  const when = fmt(o.matchDate) + (o.matchTime ? " at " + o.matchTime : "") + (o.venue ? ", " + o.venue : "");
+  return hi + "Just checking you're still OK for our match: " + when + " 🎾 If that no longer suits, let me know which days and times you're free and whether you'd prefer Menheniot or Liskeard, and either of us can change it in the app. Remember to book the court too." + link;
+}
 function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function recall(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
 function toast(text, bad) {
@@ -310,8 +325,8 @@ const actions = {
   contact: async el => {
     const r = el.dataset.row, j = await api("contact", { league: S.league, row: +r });
     if (!j) return;
-    const slot = $("ct-" + r);
-    slot.innerHTML = (j.contacts || []).map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, "Hi " + c.name.split(" ")[0] + ", it's " + S.me.name + " about our MTC ladder match."))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`;
+    const slot = $("ct-" + r), o = C.model(S.data, S.league).open.filter(x => x.row === +r)[0];
+    slot.innerHTML = (j.contacts || []).map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`;
   }
 };
 document.addEventListener("click", e => {
