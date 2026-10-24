@@ -4,7 +4,7 @@
    2. by the Google Apps Script back end (pasted into a script file called Core.gs).
    Keep both copies identical. Change season dates and rules here only. */
 var LadderCore = (function () {
-  const SEASON_START = "2026-11-01";
+  const SEASON_START = "2026-10-24"; // TEST ONLY: put back to "2026-11-01" before the season
   const SEASON_END = "2027-03-31";
   const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social", "Doubles", "Walking Tennis Doubles"];
   const VENUES = ["Menheniot", "Liskeard"];
