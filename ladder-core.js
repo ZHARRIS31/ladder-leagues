@@ -111,15 +111,20 @@ var LadderCore = (function () {
     let order = start.slice();
     const hist = {}, endD = t < SEASON_START ? SEASON_START : (t > SEASON_END ? SEASON_END : t);
     let ei = 0, li = 0;
+    // Best and worst place each entry has held, checked after every change (not just at the end of each day).
+    const seen = {};
+    const mark = () => order.forEach((k, i) => { const s = seen[k] || (seen[k] = { hi: i + 1, lo: i + 1 }); s.hi = Math.min(s.hi, i + 1); s.lo = Math.max(s.lo, i + 1); });
     const apply = ev => {
       ev.newRank = null;
       if (ev.winner !== ev.c) return;
       const di = order.indexOf(ev.d), ci = order.indexOf(ev.c);
       if (di < 0 || ci < 0 || ci < di) return;
       order.splice(ci, 1); order.splice(di, 0, ev.c); ev.newRank = di + 1;
+      mark();
     };
     for (let day = SEASON_START; day <= endD; day = addDays(day, 1)) {
       while (li < late.length && late[li].joined <= day) { if (order.indexOf(late[li].key) < 0) order.push(late[li].key); li++; }
+      mark();
       while (ei < events.length && events[ei].date <= day) { apply(events[ei]); ei++; }
       hist[day] = order.slice();
     }
@@ -141,9 +146,11 @@ var LadderCore = (function () {
     order.forEach(k => {
       const s = st[k], cur = order.indexOf(k) + 1;
       if (t < SEASON_START) { s.hi = s.lo = s.avg = cur; return; }
+      // Average: the place held at the end of each day of the season so far.
       let sum = 0, n = 0;
-      Object.keys(hist).forEach(day => { const p = posOn(k, day); if (p == null) return; sum += p; n++; s.hi = s.hi == null ? p : Math.min(s.hi, p); s.lo = s.lo == null ? p : Math.max(s.lo, p); });
-      s.avg = n ? sum / n : cur; if (s.hi == null) s.hi = s.lo = cur;
+      Object.keys(hist).forEach(day => { const p = posOn(k, day); if (p == null) return; sum += p; n++; });
+      s.avg = n ? sum / n : cur;
+      s.hi = seen[k] ? seen[k].hi : cur; s.lo = seen[k] ? seen[k].lo : cur;
     });
 
     // Giant Slayer: biggest climb in each month.
