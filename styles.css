@@ -106,6 +106,10 @@ details.panel>summary{cursor:pointer;padding:12px 14px;font-family:var(--display
 .list>div{padding:10px 14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
 .list>div:first-child{border-top:0}
 .copyline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+details.amend{display:grid;gap:10px}
+details.amend>summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:.92rem}
+details.amend[open]>summary{margin-bottom:10px}
+details.amend>div+div{margin-top:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 .mydesk{display:grid;gap:14px}

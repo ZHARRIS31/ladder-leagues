@@ -72,7 +72,8 @@ async function api(action, payload) {
 function keepForm() {
   const k = {}, f = document.activeElement && document.activeElement.id;
   document.querySelectorAll("input[id],select[id]").forEach(e => { if (e.id === "avFrom" || e.id === "avTo") return; k[e.id] = e.type === "checkbox" ? e.checked : e.value; });
-  return { k: k, f: f };
+  const open = Array.prototype.map.call(document.querySelectorAll("details[id][open]"), d => d.id);
+  return { k: k, f: f, open: open };
 }
 function restoreForm(s) {
   Object.keys(s.k).forEach(id => {
@@ -80,6 +81,7 @@ function restoreForm(s) {
     if (e.type === "checkbox") e.checked = s.k[id];
     else if (e.tagName !== "SELECT" || Array.prototype.some.call(e.options, o => o.value === s.k[id])) e.value = s.k[id];
   });
+  (s.open || []).forEach(id => { if ($(id)) $(id).open = true; });
   if (s.f && $(s.f)) $(s.f).focus();
 }
 
@@ -198,9 +200,21 @@ function myMatch(M, o, k) {
     if (meC && o.matchDate && o.matchDate <= t) h += scoreForm(o, C1, D1);
     else if (meC) h += `<p class="note">The score form opens here on match day.</p>`;
     else if (o.matchDate <= t) h += `<p class="note">Waiting for ${esc(C1)} to enter the score.</p>`;
+    h += amendForm(o);
   }
   h += `<div class="copyline"><button class="small" data-act="contact" data-row="${o.row}">Message ${esc(M.nameOf(opp))} on WhatsApp</button><span id="ct-${o.row}"></span></div></div>`;
   return h;
+}
+
+// Either player can move an accepted match or call it off. Both edit the same challenge row.
+function amendForm(o) {
+  const t = today(), hm = /(\d{1,2}):(\d{2})/.exec(o.matchTime || ""), time = hm ? hm[1].padStart(2, "0") + ":" + hm[2] : "18:00";
+  return `<details class="amend" id="am-${o.row}"><summary>Change or cancel this match</summary>
+    <div class="row"><label for="md-${o.row}">Match date<input type="date" id="md-${o.row}" min="${t}" value="${o.matchDate && o.matchDate >= t ? o.matchDate : t}"></label>
+      <label for="mt-${o.row}">Time<input type="time" id="mt-${o.row}" value="${time}"></label>
+      <label for="mv-${o.row}">Venue<select id="mv-${o.row}">${C.VENUES.map(v => `<option${v === o.venue ? " selected" : ""}>${esc(v)}</option>`).join("")}</select></label>
+      <button class="primary" data-act="amend" data-row="${o.row}">Save changes</button></div>
+    <div><button class="link small danger" data-act="cancel" data-row="${o.row}">Cancel the match</button> <span class="note">It won't count and nobody moves.</span></div></details>`;
 }
 
 function scoreForm(o, C1, D1) {
@@ -272,6 +286,15 @@ const actions = {
     afterSave(await api("accept", { league: S.league, row: +r, matchDate: $("ad-" + r).value, matchTime: $("at-" + r).value, venue: $("av-" + r).value }));
   },
   withdraw: async el => afterSave(await api("withdraw", { league: S.league, row: +el.dataset.row })),
+  amend: async el => {
+    const r = el.dataset.row;
+    if (!$("md-" + r).value) return toast("Choose a match date.", true);
+    afterSave(await api("amend", { league: S.league, row: +r, matchDate: $("md-" + r).value, matchTime: $("mt-" + r).value, venue: $("mv-" + r).value }));
+  },
+  cancel: async el => {
+    if (!confirm("Cancel this match? It won't count, nobody moves on the ladder, and your opponent will get an email.")) return;
+    afterSave(await api("withdraw", { league: S.league, row: +el.dataset.row }));
+  },
   score: async el => {
     const r = el.dataset.row, sets = [0, 1, 2].map(i => [$(`sc-${r}-${i}-c`).value, $(`sc-${r}-${i}-d`).value]);
     const chk = C.readSets(sets); if (chk.error) return toast(chk.error, true);
