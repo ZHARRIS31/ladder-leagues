@@ -89,14 +89,18 @@ var LadderCore = (function () {
     });
 
     const open = [];
+    // Results already tied to a challenge: when a score is saved, its Results row number goes in the challenge's "Result row" column (N).
+    const claimed = {};
+    ch.forEach(x => { const n = num(x.r[13]); if (n) claimed[n] = true; });
     ch.forEach((x, i) => {
       const r = x.r, c = norm(r[3]), d = norm(r[4]);
       if (!byKey[c] || !byKey[d]) return;
       const issued = pDate(r[0]); if (!issued) return;
       if (isY(r[10])) return; // withdrawn
-      const after = res.filter(y => norm(y.r[2]) === c && norm(y.r[3]) === d && (pDate(y.r[0]) || "") >= issued).length;
-      const later = ch.filter(y => norm(y.r[3]) === c && norm(y.r[4]) === d && (pDate(y.r[0]) || "") > issued).length;
-      if (after > later) return; // already played
+      if (num(r[13])) return; // played: its result is linked
+      // A result typed in by hand has no link: it belongs to the earliest unclaimed challenge between the same two, on or before the day played.
+      const played = res.filter(y => !claimed[y.row] && norm(y.r[2]) === c && norm(y.r[3]) === d && (pDate(y.r[0]) || "") >= issued)[0];
+      if (played) { claimed[played.row] = true; return; }
       const iss = dt(issued, r[1]), by = new Date(iss.getTime() + REPLY_HOURS * 36e5), acc = pDate(r[6]);
       const item = { row: x.row, c: c, d: d, issued: iss, replyBy: by, accepted: acc, matchDate: pDate(r[7]), matchTime: String(r[8] || "").trim(), venue: String(r[9] || "").trim(), wc: isY(r[5]) };
       if (!acc && now > by) events.push({ date: ymd(by), c: c, d: d, winner: c, sets: [], wo: true, auto: true, order: 1e6 + i, row: x.row, sheet: "challenges" });
