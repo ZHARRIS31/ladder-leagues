@@ -4,7 +4,7 @@
    2. by the Google Apps Script back end (pasted into a script file called Core.gs).
    Keep both copies identical. Change season dates and rules here only. */
 var LadderCore = (function () {
-  const SEASON_START = "2026-10-24"; // TEST ONLY: put back to "2026-11-01" before the season
+  const SEASON_START = "2026-10-24"; // TEST ONLY: set to "2026-11-02" before the season
   const SEASON_END = "2027-03-31";
   const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social", "Doubles", "Walking Tennis Doubles"];
   const VENUES = ["Menheniot", "Liskeard"];
@@ -196,7 +196,7 @@ var LadderCore = (function () {
   // Can entry cKey challenge entry dKey right now?
   function checkChallenge(data, league, cKey, dKey, useWildcard, now) {
     const m = model(data, league, now), t = m.today;
-    if (t < SEASON_START) return { ok: false, reason: "Challenges open on 1 November." };
+    if (t < SEASON_START) return { ok: false, reason: "Challenges open on 2 November." };
     if (t > SEASON_END) return { ok: false, reason: "The season has finished." };
     const ci = m.order.indexOf(cKey), di = m.order.indexOf(dKey);
     if (ci < 0 || di < 0) return { ok: false, reason: "Both of you need to be on this ladder." };

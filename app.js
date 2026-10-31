@@ -172,7 +172,7 @@ function renderMine(M) {
     h += `<h3>${esc(M.nameOf(k))} · position ${pos}</h3>`;
     if (o) h += myMatch(M, o, k);
     else if (pos === 1) h += `<p class="note">You're top of the ladder. Defend your place!</p>`;
-    else if (t < C.SEASON_START) h += `<p class="note">Challenges open on Sunday 1 November.</p>`;
+    else if (t < C.SEASON_START) h += `<p class="note">Challenges open on Monday 2 November.</p>`;
     else if (t > C.SEASON_END) h += `<p class="note">The season has finished.</p>`;
     else {
       const wcId = "wc-" + slug(k), useWc = $(wcId) ? $(wcId).checked && wcLeft : false;
