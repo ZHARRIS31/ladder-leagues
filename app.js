@@ -29,7 +29,7 @@ function waTo(mobile, text) {
 }
 // Ready-written WhatsApp message to an opponent, worded for where the match has got to.
 function waMessage(o, toName, c) {
-  if (S.league === "Junior") {
+  if (/^Junior/.test(S.league)) {
     const m = C.model(S.data, S.league), mine = o ? m.nameOf(isMine(m, o.c) ? o.c : o.d) : S.me.name, theirs = o ? m.nameOf(isMine(m, o.c) ? o.d : o.c) : toName;
     return (c && c.parent ? "Hi " + c.parent.split(" ")[0] : "Hello") + ", it's " + (c && c.from ? c.from.split(" ")[0] + ", " + mine + "'s parent/guardian" : mine) + ". I'm arranging the MTC Junior ladder match between " + mine + " and " + theirs + " 🎾 Which days and times would suit over the next week or so, and would Menheniot or Liskeard be better? Then we can find a time that works for both of them.\n\nThe app: " + location.origin + location.pathname;
   }
@@ -271,7 +271,8 @@ function myMatch(M, o, k) {
 function waLine(M, o, opp) {
   const cs = S.contacts[o.row];
   if (!cs) return `<div class="copyline"><button class="small" data-act="contact" data-row="${o.row}">Message ${esc(M.nameOf(opp))} on WhatsApp</button></div>`;
-  return `<div class="copyline">${cs.map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name, c)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`}</div>`;
+  const seen = {}, people = cs.filter(c => !c.mobile || !seen[c.mobile] && (seen[c.mobile] = true)); // a shared parent only needs one button
+  return `<div class="copyline">${people.map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name, c)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`}</div>`;
 }
 
 // Either player can move an accepted match or call it off. Both edit the same challenge row.
