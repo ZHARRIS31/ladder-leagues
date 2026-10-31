@@ -6,13 +6,15 @@
 var LadderCore = (function () {
   const SEASON_START = "2026-10-24"; // TEST ONLY: set to "2026-11-02" before the season
   const SEASON_END = "2027-03-31";
-  const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social", "Doubles", "Walking Tennis Doubles", "Junior"];
+  const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social Singles", "Doubles", "Social Doubles", "Junior"];
   const VENUES = ["Menheniot", "Liskeard"];
   const MONTHS = [["2026-11", "November"], ["2026-12", "December"], ["2027-01", "January"], ["2027-02", "February"], ["2027-03", "March"]];
   const REPLY_HOURS = 72;     // time the challenged player has to accept
   const MAX_PLACES_UP = 3;    // how far up you can challenge without a wild card
   const REMATCH_DAYS = 14;    // wait before re-challenging someone who beat you
 
+  // Social leagues: you can also challenge up to MAX_PLACES_UP below you, and the lower player moves up by winning, whoever challenged.
+  const isSocial = league => /^social/i.test(String(league || ""));
   const pad = n => String(n).padStart(2, "0");
   const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
@@ -120,10 +122,12 @@ var LadderCore = (function () {
     const mark = () => order.forEach((k, i) => { const s = seen[k] || (seen[k] = { hi: i + 1, lo: i + 1 }); s.hi = Math.min(s.hi, i + 1); s.lo = Math.max(s.lo, i + 1); });
     const apply = ev => {
       ev.newRank = null;
-      if (ev.winner !== ev.c) return;
       const di = order.indexOf(ev.d), ci = order.indexOf(ev.c);
-      if (di < 0 || ci < 0 || ci < di) return;
-      order.splice(ci, 1); order.splice(di, 0, ev.c); ev.newRank = di + 1;
+      ev.defence = ev.winner === ev.d && di >= 0 && ci >= 0 && di < ci;
+      if (ev.winner !== ev.c && !isSocial(league)) return;
+      const wi = order.indexOf(ev.winner), li = order.indexOf(ev.winner === ev.c ? ev.d : ev.c);
+      if (wi < 0 || li < 0 || wi < li) return;
+      order.splice(wi, 1); order.splice(li, 0, ev.winner); ev.newRank = li + 1;
       mark();
     };
     for (let day = SEASON_START; day <= endD; day = addDays(day, 1)) {
@@ -141,7 +145,7 @@ var LadderCore = (function () {
       W.w++; Lo.l++; W.streak++; Lo.streak = 0;
       if (!ev.wo) {
         W.played++; Lo.played++;
-        if (ev.winner === ev.d) W.def++;
+        if (ev.defence) W.def++;
         const dw = new Date(ev.date + "T12:00:00").getDay();
         if (dw === 6 || dw === 0) { const k = dw === 6 ? ev.date : addDays(ev.date, -1); [W, Lo].forEach(s => { s.weekend[k] = (s.weekend[k] || 0) + 1; }); }
       }
@@ -200,9 +204,12 @@ var LadderCore = (function () {
     if (t > SEASON_END) return { ok: false, reason: "The season has finished." };
     const ci = m.order.indexOf(cKey), di = m.order.indexOf(dKey);
     if (ci < 0 || di < 0) return { ok: false, reason: "Both of you need to be on this ladder." };
-    if (di >= ci) return { ok: false, reason: "You can only challenge someone above you." };
+    const social = isSocial(league), below = di > ci;
+    if (di === ci) return { ok: false, reason: "You can't challenge yourself." };
+    if (below && !social) return { ok: false, reason: "You can only challenge someone above you." };
+    if (below && di - ci > MAX_PLACES_UP) return { ok: false, reason: "You can challenge up to " + MAX_PLACES_UP + " places below you." };
     if (useWildcard && m.byKey[cKey].wcUsed) return { ok: false, reason: "Your wild card for this league has already been used." };
-    if (!useWildcard && ci - di > MAX_PLACES_UP) return { ok: false, reason: "Without a wild card you can challenge up to " + MAX_PLACES_UP + " places above you." };
+    if (!below && !useWildcard && ci - di > MAX_PLACES_UP) return { ok: false, reason: "Without a wild card you can challenge up to " + MAX_PLACES_UP + " places above you." };
     if (openFor(m, cKey)) return { ok: false, reason: "You're already in a match. Finish it first." };
     if (openFor(m, dKey)) return { ok: false, reason: m.nameOf(dKey) + " is already in a match." };
     const aw = awayFor(data, m.nameOf(dKey), t, addDays(t, 3));
@@ -215,7 +222,7 @@ var LadderCore = (function () {
     return { ok: true, model: m };
   }
 
-  return { SEASON_START: SEASON_START, SEASON_END: SEASON_END, LEAGUES: LEAGUES, VENUES: VENUES, REPLY_HOURS: REPLY_HOURS, MAX_PLACES_UP: MAX_PLACES_UP,
+  return { isSocial: isSocial, SEASON_START: SEASON_START, SEASON_END: SEASON_END, LEAGUES: LEAGUES, VENUES: VENUES, REPLY_HOURS: REPLY_HOURS, MAX_PLACES_UP: MAX_PLACES_UP,
     ymd: ymd, addDays: addDays, daysBetween: daysBetween, norm: norm, pDate: pDate, rows: rows, members: members, milestone: milestone,
     readSets: readSets, model: model, awayFor: awayFor, openFor: openFor, checkChallenge: checkChallenge };
 })();

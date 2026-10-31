@@ -139,7 +139,7 @@ function render() {
 // The signed-in player's own leagues, with anything they need to do first.
 function myStatus(M, k) {
   const o = C.openFor(M, k), t = today();
-  if (!o) return { text: M.order.indexOf(k) === 0 ? "Top of the ladder. Defend your place!" : "No match in progress." };
+  if (!o) return { text: M.order.indexOf(k) === 0 && !C.isSocial(S.league) ? "Top of the ladder. Defend your place!" : "No match in progress." };
   const meC = o.c === k, opp = M.nameOf(meC ? o.d : o.c);
   if (!o.accepted) return meC ? { text: "Waiting for " + opp + " to reply by " + fmtDT(o.replyBy) + "." } : { todo: opp + " has challenged you. Reply by " + fmtDT(o.replyBy) + "." };
   if (!o.matchDate) return meC ? { text: "Waiting for " + opp + " to enter the match date." } : { todo: "Agree a date with " + opp + " and enter it." };
@@ -207,15 +207,16 @@ function renderMine(M) {
     const pos = M.order.indexOf(k) + 1, o = C.openFor(M, k), wcLeft = !(M.byKey[k] && M.byKey[k].wcUsed);
     h += `<h3>${esc(M.nameOf(k))} · position ${pos}</h3>`;
     if (o) h += myMatch(M, o, k);
-    else if (pos === 1) h += `<p class="note">You're top of the ladder. Defend your place!</p>`;
+    else if (pos === 1 && !C.isSocial(S.league)) h += `<p class="note">You're top of the ladder. Defend your place!</p>`;
     else if (t < C.SEASON_START) h += `<p class="note">Challenges open on Monday 2 November.</p>`;
     else if (t > C.SEASON_END) h += `<p class="note">The season has finished.</p>`;
     else {
       const wcId = "wc-" + slug(k), useWc = $(wcId) ? $(wcId).checked && wcLeft : false;
       const opts = [];
-      for (let j = 0; j < pos - 1; j++) {
-        const d = M.order[j];
-        if (!useWc && pos - 1 - j > C.MAX_PLACES_UP) continue;
+      for (let j = 0; j < M.order.length; j++) {
+        const d = M.order[j], below = j > pos - 1;
+        if (j === pos - 1 || (below && !C.isSocial(S.league))) continue;
+        if ((below || !useWc) && Math.abs(pos - 1 - j) > C.MAX_PLACES_UP) continue;
         const v = C.checkChallenge(S.data, S.league, k, d, useWc);
         opts.push(`<option value="${esc(d)}" ${v.ok ? "" : "disabled"}>${j + 1}. ${esc(M.nameOf(d))}${v.ok ? "" : " (" + esc(v.reason.replace(/\.$/, "")) + ")"}</option>`);
       }
@@ -322,7 +323,7 @@ function renderResults(M) {
   $("results").innerHTML = ev.length ? `<table><thead><tr><th>Played</th><th>Winner</th><th>Beat</th><th>Score</th><th>Ladder</th></tr></thead><tbody>` + ev.map(e => {
     const lo = e.winner === e.c ? e.d : e.c;
     const score = e.wo ? (e.auto ? "Walkover (no reply in 72h)" : "Walkover") : e.sets.map(s => e.winner === e.c ? s[0] + "–" + s[1] : s[1] + "–" + s[0]).join(", ");
-    const moved = e.winner === e.c ? (e.newRank ? esc(M.nameOf(e.winner)) + " up to " + e.newRank : "No change") : "Defended";
+    const moved = e.newRank ? esc(M.nameOf(e.winner)) + " up to " + e.newRank : e.defence ? "Defended" : "No change";
     return `<tr><td>${esc(fmt(e.date))}</td><td>${esc(M.nameOf(e.winner))}</td><td>${esc(M.nameOf(lo))}</td><td>${esc(score)}</td><td>${moved}</td></tr>`;
   }).join("") + `</tbody></table>` : `<div class="empty"><strong>No results yet</strong>Results appear here once the challenger enters the score.</div>`;
 }
