@@ -28,7 +28,11 @@ function waTo(mobile, text) {
   return "https://wa.me/" + n + "?text=" + encodeURIComponent(text);
 }
 // Ready-written WhatsApp message to an opponent, worded for where the match has got to.
-function waMessage(o, toName) {
+function waMessage(o, toName, c) {
+  if (S.league === "Junior") {
+    const m = C.model(S.data, S.league), mine = o ? m.nameOf(isMine(m, o.c) ? o.c : o.d) : S.me.name, theirs = o ? m.nameOf(isMine(m, o.c) ? o.d : o.c) : toName;
+    return (c && c.parent ? "Hi " + c.parent.split(" ")[0] : "Hello") + ", it's " + (c && c.from ? c.from.split(" ")[0] + ", " + mine + "'s parent/guardian" : mine) + ". I'm arranging the MTC Junior ladder match between " + mine + " and " + theirs + " 🎾 Which days and times would suit over the next week or so, and would Menheniot or Liskeard be better? Then we can find a time that works for both of them.\n\nThe app: " + location.origin + location.pathname;
+  }
   const hi = "Hi " + toName.split(" ")[0] + ", it's " + S.me.name.split(" ")[0] + " from the MTC " + S.league + " ladder. ";
   const ask = "Could you let me know which days and times you're free over the next week or so, and whether you'd prefer Menheniot or Liskeard? Then we can find a time that suits us both.";
   const link = "\n\nThe app: " + location.origin + location.pathname;
@@ -266,7 +270,7 @@ function myMatch(M, o, k) {
 function waLine(M, o, opp) {
   const cs = S.contacts[o.row];
   if (!cs) return `<div class="copyline"><button class="small" data-act="contact" data-row="${o.row}">Message ${esc(M.nameOf(opp))} on WhatsApp</button></div>`;
-  return `<div class="copyline">${cs.map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`}</div>`;
+  return `<div class="copyline">${cs.map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name, c)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`}</div>`;
 }
 
 // Either player can move an accepted match or call it off. Both edit the same challenge row.

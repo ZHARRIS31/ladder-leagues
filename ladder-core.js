@@ -6,7 +6,7 @@
 var LadderCore = (function () {
   const SEASON_START = "2026-10-24"; // TEST ONLY: set to "2026-11-02" before the season
   const SEASON_END = "2027-03-31";
-  const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social", "Doubles", "Walking Tennis Doubles"];
+  const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social", "Doubles", "Walking Tennis Doubles", "Junior"];
   const VENUES = ["Menheniot", "Liskeard"];
   const MONTHS = [["2026-11", "November"], ["2026-12", "December"], ["2027-01", "January"], ["2027-02", "February"], ["2027-03", "March"]];
   const REPLY_HOURS = 72;     // time the challenged player has to accept
