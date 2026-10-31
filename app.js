@@ -13,7 +13,7 @@ const CONFIG = {
 
 /* ---------- helpers ---------- */
 const C = LadderCore;
-const S = { data: null, league: C.LEAGUES[0], me: null, loading: false };
+const S = { data: null, league: C.LEAGUES[0], me: null, loading: false, contacts: {} };
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const today = () => C.ymd(new Date());
@@ -36,8 +36,13 @@ function waMessage(o, toName) {
   const iChallenged = isMine(C.model(S.data, S.league), o.c);
   if (!o.accepted) {
     return hi + (iChallenged
-      ? "I've challenged you to a match 🎾 so we now need to arrange when to play. " + ask + " Once we've agreed, please accept the challenge in the app and put the date in. Your reply is due by " + fmtDT(o.replyBy) + "."
-      : "Thanks for the challenge 🎾 Let's arrange when to play. " + ask + " Once we've agreed, I'll accept it in the app with the date.") + link;
+      ? "I've challenged you to a match 🎾 so we now need to arrange when to play. " + ask + " Please accept the challenge in the app by " + fmtDT(o.replyBy) + ", and once we've agreed a date you can put it in."
+      : "Thanks for the challenge 🎾 Let's arrange when to play. " + ask + " I'll accept it in the app shortly.") + link;
+  }
+  if (!o.matchDate) {
+    return hi + (iChallenged
+      ? "Thanks for accepting 🎾 We now need to come up with a date to play. " + ask + " Once we've agreed, please put the date in the app."
+      : "I accept your challenge 🎾 We now need to come up with a date to play. " + ask + " Once we've agreed, I'll put the date in the app and you'll get an email with the details.") + link;
   }
   const when = fmt(o.matchDate) + (o.matchTime ? " at " + o.matchTime : "") + (o.venue ? ", " + o.venue : "");
   return hi + "Just checking you're still OK for our match: " + when + " 🎾 If that no longer suits, let me know which days and times you're free and whether you'd prefer Menheniot or Liskeard, and either of us can change it in the app. Remember to book the court too." + link;
@@ -112,7 +117,10 @@ function render() {
   $("sPlayed").textContent = all.reduce((a, x) => a + x.m.events.length, 0);
   $("tabs").innerHTML = all.map(x => `<button class="tab" role="tab" data-league="${esc(x.l)}" aria-selected="${x.l === S.league}">${esc(x.l)}<small>${x.m.order.length}</small></button>`).join("");
 
+  const mineIn = S.me ? all.filter(x => x.m.order.some(k => isMine(x.m, k))) : [];
+  if (S.me && S.data && !S.picked && mineIn.length) { S.picked = true; if (!mineIn.some(x => x.l === S.league)) S.league = mineIn[0].l; $("tabs").innerHTML = all.map(x => `<button class="tab" role="tab" data-league="${esc(x.l)}" aria-selected="${x.l === S.league}">${esc(x.l)}<small>${x.m.order.length}</small></button>`).join(""); }
   const M = all.filter(x => x.l === S.league)[0].m;
+  renderTop(mineIn);
   renderWho();
   renderStandings(M);
   renderMine(M);
@@ -122,6 +130,30 @@ function render() {
   renderBadges(M);
   $("footer").innerHTML = `<span>Court bookings and questions: <a href="${esc(CONFIG.CLUB_URL)}" target="_blank" rel="noopener">Menheniot Tennis Club</a></span><span style="user-select:all">${esc(CONFIG.CLUB_EMAIL)}</span>`;
   restoreForm(kept);
+}
+
+// The signed-in player's own leagues, with anything they need to do first.
+function myStatus(M, k) {
+  const o = C.openFor(M, k), t = today();
+  if (!o) return { text: M.order.indexOf(k) === 0 ? "Top of the ladder. Defend your place!" : "No match in progress." };
+  const meC = o.c === k, opp = M.nameOf(meC ? o.d : o.c);
+  if (!o.accepted) return meC ? { text: "Waiting for " + opp + " to reply by " + fmtDT(o.replyBy) + "." } : { todo: opp + " has challenged you. Reply by " + fmtDT(o.replyBy) + "." };
+  if (!o.matchDate) return meC ? { text: "Waiting for " + opp + " to enter the match date." } : { todo: "Agree a date with " + opp + " and enter it." };
+  if (o.matchDate <= t && meC) return { todo: "Enter your score against " + opp + "." };
+  return { text: "Match against " + opp + ": " + fmt(o.matchDate) + (o.matchTime ? " at " + o.matchTime : "") + ", " + o.venue + "." };
+}
+function renderTop(mineIn) {
+  const box = $("myTop");
+  box.hidden = !mineIn.length;
+  if (!mineIn.length) { box.innerHTML = ""; return; }
+  const cards = [];
+  mineIn.forEach(x => x.m.order.filter(k => isMine(x.m, k)).forEach(k => {
+    const s = myStatus(x.m, k);
+    cards.push({ todo: !!s.todo, html: `<button class="mycard ${s.todo ? "todo" : ""}" data-league="${esc(x.l)}" data-goto="1"><b>${esc(x.l)}</b><span>Position ${x.m.order.indexOf(k) + 1} of ${x.m.order.length}</span><span class="${s.todo ? "do" : "note"}">${esc(s.todo || s.text)}</span></button>` });
+  }));
+  cards.sort((a, b) => b.todo - a.todo);
+  const n = cards.filter(c => c.todo).length;
+  box.innerHTML = `<div class="sechead"><h2>My leagues</h2><span class="note">${n ? n + " thing" + (n > 1 ? "s" : "") + " to do" : "Nothing to do right now"}</span></div><div class="mytop">${cards.map(c => c.html).join("")}</div>`;
 }
 
 function renderWho() {
@@ -154,7 +186,7 @@ function renderStandings(M) {
     $("standings").innerHTML = `<table><thead><tr><th class="num">Pos</th><th>${doubles ? "Pair" : "Player"}</th><th>Status</th><th class="num">W</th><th class="num">L</th><th class="num">Played</th><th class="num">High</th><th class="num">Low</th><th class="num">Avg</th></tr></thead><tbody>` +
       M.order.map((k, i) => {
         const s = M.st[k], aw = C.awayFor(S.data, M.nameOf(k), from, to), b = C.openFor(M, k);
-        const status = aw ? `<span class="chip away">Away ${esc(fmt(aw.from))}–${esc(fmt(aw.to))}</span>` : b ? `<span class="chip open">${b.accepted ? "Match arranged" : "Challenged"}</span>` : `<span class="chip free">Available</span>`;
+        const status = aw ? `<span class="chip away">Away ${esc(fmt(aw.from))}–${esc(fmt(aw.to))}</span>` : b ? `<span class="chip open">${b.matchDate ? "Match arranged" : b.accepted ? "Date to be agreed" : "Challenged"}</span>` : `<span class="chip free">Available</span>`;
         return `<tr class="${i === 0 ? "top " : ""}${aw ? "out " : ""}${isMine(M, k) ? "me" : ""}"><td class="rank">${i + 1}</td><td><div class="name"><strong>${esc(M.nameOf(k))}</strong>${icons(k)}</div></td><td>${status}</td><td class="num">${s.w}</td><td class="num">${s.l}</td><td class="num">${s.played}</td><td class="num">${s.hi}</td><td class="num">${s.lo}</td><td class="num">${s.avg == null ? "–" : s.avg.toFixed(1)}</td></tr>`;
       }).join("") + `</tbody></table>`;
   }
@@ -203,11 +235,21 @@ function myMatch(M, o, k) {
   if (!o.accepted) {
     h += `<div class="due">Reply by <b>${esc(fmtDT(o.replyBy))}</b></div>`;
     if (!meC) {
-      h += `<div class="row"><label for="ad-${o.row}">Match date<input type="date" id="ad-${o.row}" min="${t}" value="${C.addDays(t, 3)}"></label>
-        <label for="at-${o.row}">Time<input type="time" id="at-${o.row}" value="18:00"></label>
-        <label for="av-${o.row}">Venue<select id="av-${o.row}">${C.VENUES.map(v => `<option>${esc(v)}</option>`).join("")}</select></label>
-        <button class="primary" data-act="accept" data-row="${o.row}">Accept challenge</button></div>`;
+      h += `<p class="note">Tap Accept, then message ${esc(C1)} on WhatsApp to agree a date.</p><div><button class="primary" data-act="accept" data-row="${o.row}">Accept challenge</button></div>`;
     } else h += `<p class="note">Waiting for ${esc(D1)} to reply.</p><div><button class="link small" data-act="withdraw" data-row="${o.row}">Withdraw challenge</button></div>`;
+  } else if (!o.matchDate) {
+    h += `<div class="due">Accepted · date to be agreed</div>`;
+    if (!meC) {
+      h += `<p class="note"><b>Step 1:</b> message ${esc(C1)} on WhatsApp to agree a date.</p>${waLine(M, o, opp)}
+        <p class="note"><b>Step 2:</b> once you've agreed, enter the date and send it to ${esc(C1)}.</p>
+        <div class="row"><label for="md-${o.row}">Match date<input type="date" id="md-${o.row}" min="${t}" value="${C.addDays(t, 3)}"></label>
+        <label for="mt-${o.row}">Time<input type="time" id="mt-${o.row}" value="18:00"></label>
+        <label for="mv-${o.row}">Venue<select id="mv-${o.row}">${C.VENUES.map(v => `<option>${esc(v)}</option>`).join("")}</select></label>
+        <button class="primary" data-act="amend" data-row="${o.row}">Send date to ${esc(C1)}</button></div>`;
+    } else h += `<p class="note">${esc(D1)} has accepted. Agree a date on WhatsApp, and ${esc(D1)} will put it in the app.</p>`;
+    h += `<div><button class="link small danger" data-act="cancel" data-row="${o.row}">Cancel the match</button></div>`;
+    if (meC) h += waLine(M, o, opp);
+    return h + "</div>";
   } else {
     const link = CONFIG.BOOKING_URLS[o.venue] || CONFIG.CLUB_URL;
     h += `<div class="due">${esc(fmt(o.matchDate))}${o.matchTime ? " at " + esc(o.matchTime) : ""} · ${esc(o.venue)}</div>
@@ -217,8 +259,14 @@ function myMatch(M, o, k) {
     else if (o.matchDate <= t) h += `<p class="note">Waiting for ${esc(C1)} to enter the score.</p>`;
     h += amendForm(o);
   }
-  h += `<div class="copyline"><button class="small" data-act="contact" data-row="${o.row}">Message ${esc(M.nameOf(opp))} on WhatsApp</button><span id="ct-${o.row}"></span></div></div>`;
-  return h;
+  return h + waLine(M, o, opp) + "</div>";
+}
+
+// WhatsApp links once the number has been fetched, otherwise the button that fetches it.
+function waLine(M, o, opp) {
+  const cs = S.contacts[o.row];
+  if (!cs) return `<div class="copyline"><button class="small" data-act="contact" data-row="${o.row}">Message ${esc(M.nameOf(opp))} on WhatsApp</button></div>`;
+  return `<div class="copyline">${cs.map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`}</div>`;
 }
 
 // Either player can move an accepted match or call it off. Both edit the same challenge row.
@@ -289,7 +337,7 @@ function renderBadges(M) {
 /* ---------- actions ---------- */
 async function afterSave(j) { if (j) await load(); }
 const actions = {
-  signout: () => { S.me = null; store("me", null); render(); },
+  signout: () => { S.me = null; S.contacts = {}; S.picked = false; store("me", null); render(); },
   rerender: () => render(),
   challenge: async el => {
     const k = el.dataset.entry, d = $("ch-" + slug(k)).value, wcEl = $("wc-" + slug(k));
@@ -297,8 +345,11 @@ const actions = {
     afterSave(await api("challenge", { league: S.league, challenger: k, defender: d, wildcard: !!(wcEl && wcEl.checked) }));
   },
   accept: async el => {
-    const r = el.dataset.row;
-    afterSave(await api("accept", { league: S.league, row: +r, matchDate: $("ad-" + r).value, matchTime: $("at-" + r).value, venue: $("av-" + r).value }));
+    const r = +el.dataset.row;
+    if (!await api("accept", { league: S.league, row: r })) return;
+    await load();
+    const c = await api("contact", { league: S.league, row: r }); // so the WhatsApp button is ready straight away
+    if (c) { S.contacts[r] = c.contacts || []; render(); }
   },
   withdraw: async el => afterSave(await api("withdraw", { league: S.league, row: +el.dataset.row })),
   amend: async el => {
@@ -325,13 +376,13 @@ const actions = {
   contact: async el => {
     const r = el.dataset.row, j = await api("contact", { league: S.league, row: +r });
     if (!j) return;
-    const slot = $("ct-" + r), o = C.model(S.data, S.league).open.filter(x => x.row === +r)[0];
-    slot.innerHTML = (j.contacts || []).map(c => c.mobile ? `<a class="btn wa" href="${esc(waTo(c.mobile, waMessage(o, c.name)))}" target="_blank" rel="noopener">WhatsApp ${esc(c.name)}</a> <span class="note" style="user-select:all">${esc(c.mobile)}</span>` : `<span class="note">No number saved for ${esc(c.name)}.</span>`).join(" ") || `<span class="note">No numbers saved.</span>`;
+    S.contacts[r] = j.contacts || [];
+    render();
   }
 };
 document.addEventListener("click", e => {
   const tab = e.target.closest("[data-league]");
-  if (tab) { S.league = tab.dataset.league; try { history.replaceState(null, "", "#" + slug(S.league)); } catch (x) {} render(); return; }
+  if (tab) { S.league = tab.dataset.league; S.picked = true; try { history.replaceState(null, "", "#" + slug(S.league)); } catch (x) {} render(); if (tab.dataset.goto) $("mine").scrollIntoView({ block: "start" }); return; }
   const b = e.target.closest("button[data-act]");
   if (b && actions[b.dataset.act]) { e.preventDefault(); actions[b.dataset.act](b); }
 });
@@ -354,7 +405,7 @@ $("avTo").addEventListener("change", render);
 (function start() {
   const t = today(); $("avFrom").value = t; $("avTo").value = C.addDays(t, 14);
   const h = (location.hash || "").slice(1), hit = C.LEAGUES.filter(l => slug(l) === h)[0];
-  if (hit) S.league = hit;
+  if (hit) { S.league = hit; S.picked = true; }
   S.me = recall("me");
   render();
   load();

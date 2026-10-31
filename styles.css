@@ -24,6 +24,8 @@ h2{font-size:1.6rem;font-weight:600;text-transform:uppercase}
 h3{font-size:1.2rem;font-weight:600}
 .eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
 header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;border-bottom:3px solid var(--ink);padding-bottom:18px}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:84px;height:84px;flex:none;border-radius:50%}
 .board{display:flex;gap:10px;flex-wrap:wrap}
 .cell{background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:4px;min-width:96px}
 .cell b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1;font-variant-numeric:tabular-nums}
@@ -112,6 +114,11 @@ details.amend[open]>summary{margin-bottom:10px}
 details.amend>div+div{margin-top:10px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+.mytop{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.mycard{display:grid;gap:4px;text-align:left;font-weight:400;padding:12px 14px;border-radius:6px;border:1px solid var(--line);background:var(--surface)}
+.mycard b{font-family:var(--display);font-size:1.2rem;font-weight:600;text-transform:uppercase}
+.mycard.todo{border-color:var(--warn);background:var(--warn-bg);box-shadow:inset 4px 0 0 var(--warn)}
+.mycard .do{font-weight:700}
 .mydesk{display:grid;gap:14px}
 .mydesk h3{margin-top:4px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-weight:600;max-width:min(92vw,520px);z-index:20;box-shadow:0 6px 24px rgba(0,0,0,.25)}
