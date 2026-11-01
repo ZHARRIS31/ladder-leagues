@@ -1,8 +1,8 @@
 /* Lets the app open quickly and install to the home screen.
    Always tries the network first, so players never see an old version for long.
    League data comes from Google and is never cached here. */
-const CACHE = "mtc-ladder-v2";
-const SHELL = ["./", "./index.html", "./styles.css", "./ladder-core.js", "./app.js", "./manifest.webmanifest", "./icon.svg"];
+const CACHE = "mtc-ladder-v3";
+const SHELL = ["./", "./index.html", "./styles.css", "./ladder-core.js", "./app.js", "./manifest.webmanifest", "./icon-192.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)));
