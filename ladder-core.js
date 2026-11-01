@@ -14,8 +14,9 @@ var LadderCore = (function () {
   const MAX_PLACES_UP = 3;    // how far up you can challenge without a wild card
   const REMATCH_DAYS = 14;    // wait before re-challenging someone who beat you
 
-  // Social leagues: you can also challenge up to MAX_PLACES_UP below you, and the lower player moves up by winning, whoever challenged.
-  const isSocial = league => /^social/i.test(String(league || ""));
+  // Leagues listed here also let you challenge up to MAX_PLACES_UP below you, and the lower player moves up by winning, whoever challenged. None at present.
+  const BOTH_WAYS_LEAGUES = [];
+  const isSocial = league => BOTH_WAYS_LEAGUES.indexOf(league) >= 0;
   const pad = n => String(n).padStart(2, "0");
   const ymd = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return ymd(d); };

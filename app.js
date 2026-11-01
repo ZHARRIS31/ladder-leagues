@@ -60,7 +60,7 @@ function toast(text, bad) {
 const isMine = (m, key) => !!S.me && C.members(m.nameOf(key)).indexOf(C.norm(S.me.name)) >= 0;
 
 /* ---------- self-update: when publishing, change APP_VERSION here and "version" in version.json to the same new value ---------- */
-const APP_VERSION = "2026-11-01-2";
+const APP_VERSION = "2026-11-01-3";
 async function checkForUpdate() {
   try {
     const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
