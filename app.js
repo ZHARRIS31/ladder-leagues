@@ -59,6 +59,23 @@ function toast(text, bad) {
 }
 const isMine = (m, key) => !!S.me && C.members(m.nameOf(key)).indexOf(C.norm(S.me.name)) >= 0;
 
+/* ---------- self-update: when publishing, change APP_VERSION here and "version" in version.json to the same new value ---------- */
+const APP_VERSION = "2026-11-01-1";
+async function checkForUpdate() {
+  try {
+    const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+    const v = (await r.json()).version;
+    if (!v || v === APP_VERSION) return;
+    if (/INPUT|SELECT|TEXTAREA/.test((document.activeElement || {}).tagName || "")) return; // don't interrupt someone typing
+    let tried = null; try { tried = sessionStorage.getItem("updatedTo"); sessionStorage.setItem("updatedTo", v); } catch (e) {}
+    if (tried === v) return; // already refreshed for this version once: never loop
+    await Promise.all(["./", "index.html", "styles.css", "ladder-core.js", "app.js"].map(f => fetch(f, { cache: "reload" })));
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
+    if (reg) await reg.update();
+    location.reload();
+  } catch (e) {} // offline or not published yet: try again next time
+}
+
 /* ---------- talking to the Google Sheet ---------- */
 async function load() {
   if (CONFIG.API_URL.indexOf("http") !== 0) { $("status").textContent = "Set API_URL in app.js to your Apps Script web app address."; render(); return; }
@@ -416,5 +433,6 @@ $("avTo").addEventListener("change", render);
   render();
   load();
   setInterval(() => { if (!document.hidden && !S.loading) load(); }, CONFIG.REFRESH_SECONDS * 1000);
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { load(); checkForUpdate(); } });
+  checkForUpdate();
 })();
