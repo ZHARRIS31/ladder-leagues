@@ -4,9 +4,10 @@
    2. by the Google Apps Script back end (pasted into a script file called Core.gs).
    Keep both copies identical. Change season dates and rules here only. */
 var LadderCore = (function () {
-  const SEASON_START = "2026-10-24"; // TEST ONLY: set to "2026-11-02" before the season
+  const SEASON_START = "2026-11-02";
   const SEASON_END = "2027-03-31";
-  const LEAGUES = ["Competitive Mixed", "Competitive Ladies", "Social Singles", "Competitive Doubles", "Social Doubles", "Junior Singles", "Junior Doubles"];
+  // Paused until there are enough entries; add back to this list to switch on: "Competitive Ladies", "Social Doubles", "Junior Doubles".
+  const LEAGUES = ["Competitive Mixed", "Competitive Doubles", "Social Singles", "Junior Singles"];
   const VENUES = ["Menheniot", "Liskeard"];
   const MONTHS = [["2026-11", "November"], ["2026-12", "December"], ["2027-01", "January"], ["2027-02", "February"], ["2027-03", "March"]];
   const REPLY_HOURS = 72;     // time the challenged player has to accept
