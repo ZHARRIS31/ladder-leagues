@@ -302,8 +302,8 @@ function renderOpen(M) {
     const C1 = M.nameOf(o.c), D1 = M.nameOf(o.d); let body;
     if (!o.accepted) {
       const hrs = Math.max(1, Math.ceil((o.replyBy - now) / 36e5));
-      body = `<div class="due">Challenged ${esc(fmtDT(o.issued))} · reply by <b>${esc(fmtDT(o.replyBy))}</b> · ${hrs} hours left</div>
-        <div class="copyline"><a class="btn wa" href="${esc(waShare("MTC " + S.league + " ladder: " + C1 + " has challenged " + D1 + ". " + D1 + ", please accept and pick a date by " + fmtDT(o.replyBy) + ", or " + C1 + " gets the win."))}" target="_blank" rel="noopener">Share reminder on WhatsApp</a></div>`;
+      body = `<div class="due">Challenged ${esc(fmtDT(o.issued))} · reply by <b>${esc(fmtDT(o.replyBy))}</b> · ${hrs} hours left</div>` + (isMine(M, o.c) || isMine(M, o.d) ? `
+        <div class="copyline"><a class="btn wa" href="${esc(waShare("MTC " + S.league + " ladder: " + C1 + " has challenged " + D1 + ". " + D1 + ", please accept by " + fmtDT(o.replyBy) + ", or " + C1 + " gets the win."))}" target="_blank" rel="noopener">Share reminder on WhatsApp</a></div>` : "");
     } else {
       body = `<div class="due">${o.matchDate ? esc(fmt(o.matchDate)) : "Date to be fixed"}${o.matchTime ? " at " + esc(o.matchTime) : ""}${o.venue ? " · " + esc(o.venue) : ""}</div>` +
         (o.matchDate && o.matchDate <= t ? `<div class="note">Waiting for ${esc(C1)} to enter the score.</div>` : "");
