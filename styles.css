@@ -1,19 +1,19 @@
 /* MTC Ladder Leagues app styles.
    Layout: scoreboard header, sign-in bar, league tabs, standings, "my ladder" desk beside matches in progress, away list, results, badges, rules. */
 :root{
-  --bg:#f3f5f6; --surface:#ffffff; --ink:#18242e; --muted:#5b6b77; --line:#d9e0e4;
-  --accent:#1f5c4a; --accent-ink:#ffffff; --ball:#c7d33a; --ball-ink:#2b3008;
+  --bg:#eef3f8; --surface:#ffffff; --ink:#14294a; --muted:#51647f; --line:#d3dde9; --navy:#1b365d;
+  --accent:#1b365d; --accent-ink:#ffffff; --ball:#78d64b; --ball-ink:#10203a;
   --warn:#9a5b00; --warn-bg:#fdf0dc; --ok:#1f6b3a; --ok-bg:#e1f2e6; --danger:#a3312b; --danger-bg:#fbe5e3;
   --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
   --body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f171d; --surface:#17222a; --ink:#e7edf0; --muted:#97a7b2; --line:#2a3842;
-  --accent:#5fb595; --accent-ink:#0b1a14; --ball:#d6e24a; --ball-ink:#1d2104;
+  --bg:#0d1829; --surface:#16253e; --ink:#e9eff7; --muted:#a3b3c9; --line:#2a3d5c; --navy:#1b365d;
+  --accent:#78d64b; --accent-ink:#10203a; --ball:#78d64b; --ball-ink:#10203a;
   --warn:#f0b866; --warn-bg:#3a2b12; --ok:#7fd29a; --ok-bg:#163222; --danger:#f08a84; --danger-bg:#3b1c1a; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f171d; --surface:#17222a; --ink:#e7edf0; --muted:#97a7b2; --line:#2a3842;
-  --accent:#5fb595; --accent-ink:#0b1a14; --ball:#d6e24a; --ball-ink:#1d2104;
+  --bg:#0d1829; --surface:#16253e; --ink:#e9eff7; --muted:#a3b3c9; --line:#2a3d5c; --navy:#1b365d;
+  --accent:#78d64b; --accent-ink:#10203a; --ball:#78d64b; --ball-ink:#10203a;
   --warn:#f0b866; --warn-bg:#3a2b12; --ok:#7fd29a; --ok-bg:#163222; --danger:#f08a84; --danger-bg:#3b1c1a; color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
@@ -23,17 +23,23 @@ h1{font-size:clamp(2.2rem,6vw,3.4rem);font-weight:700;text-transform:uppercase}
 h2{font-size:1.6rem;font-weight:600;text-transform:uppercase}
 h3{font-size:1.2rem;font-weight:600}
 .eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
-header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;border-bottom:3px solid var(--ink);padding-bottom:18px}
-.brand{display:flex;gap:14px;align-items:center}
-.logo{width:84px;height:84px;flex:none;border-radius:50%}
+header{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between;background:var(--navy);color:#fff;border-bottom:6px solid #78d64b;border-radius:10px;padding:18px 20px}
+header .eyebrow,header .note{color:#d5e0ee}
+.brand{display:flex;gap:14px;align-items:center;min-width:0;max-width:100%}
+.brand>div{min-width:0;flex:1 1 auto}
+header>*{min-width:0;max-width:100%}
+@media (max-width:560px){.brand{align-items:flex-start}.logo{width:60px!important;height:60px!important}h1{font-size:2rem}.cell{min-width:82px;flex:1 1 0}.board{width:100%}}
+.logo{width:84px;height:84px;flex:none;border-radius:50%;background:#fff}
 .board{display:flex;gap:10px;flex-wrap:wrap}
-.cell{background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:4px;min-width:96px}
+.cell{background:rgba(255,255,255,.14);color:#fff;padding:8px 14px;border-radius:4px;min-width:96px}
 .cell b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1;font-variant-numeric:tabular-nums}
 .cell span{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
 .cell.ball{background:var(--ball);color:var(--ball-ink)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:10px}
 .tab{border-radius:99px;padding:7px 14px}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:hover{border-color:var(--ball)}
+.tab[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:inset 0 -3px 0 var(--ball)}
+h2{border-left:5px solid var(--ball);padding-left:9px}
 .tab small{opacity:.7;font-weight:400;margin-left:4px}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
 @media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
